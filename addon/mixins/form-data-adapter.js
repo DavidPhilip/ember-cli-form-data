@@ -51,7 +51,18 @@ export default Mixin.create({
         this._appendValue(value[key], `${formKey}[${key}]`, formData);
       }, this);
     } else if (typeof value !== 'undefined'){
-      formData.append(formKey, value === null ? '' : value);
+      var sendAsFile = this.get('sendAsFile');
+      var data = value === null ? '' : value;
+      var dataArgs = [formKey];
+      
+      if (sendAsFile) {
+        dataArgs.push(new File([ data ], `${formKey}.json`, { type: 'application/vnd.api+json' }));
+        dataArgs.push(formKey);
+      } else {
+        dataArgs.push(data);
+      }
+
+      formData.append(...dataArgs);
     }
   },
 });
