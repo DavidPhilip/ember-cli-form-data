@@ -11,7 +11,9 @@ export default Mixin.create({
   ajaxOptions: function(url, type, options) {
     var data;
 
-    if (options && 'data' in options) { data = options.data; }
+    if (options && 'data' in options) {
+      data = options.data;
+    }
 
     var hash = this._super.apply(this, arguments);
 
@@ -50,13 +52,28 @@ export default Mixin.create({
       Object.keys(value).forEach(function(key) {
         this._appendValue(value[key], `${formKey}[${key}]`, formData);
       }, this);
-    } else if (typeof value !== 'undefined'){
+    } else if (typeof value !== 'undefined') {
       var sendAsFile = this.get('sendAsFile');
       var data = value === null ? '' : value;
       var dataArgs = [formKey];
-      
+
       if (sendAsFile) {
-        dataArgs.push(new File([ data ], `${formKey}.json`, { type: 'application/vnd.api+json' }));
+        var type = 'application/vnd.api+json';
+        var filename = `${formKey}.json`;
+        var blob = new Blob([data], { type });
+
+        if (
+          /Edge/.test(navigator.userAgent) &&
+          typeof window.navigator.msSaveBlob !== 'undefined'
+        ) {
+          // EDGE Bug - Not supporting File
+          // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/9551546/
+          window.navigator.msSaveBlob(blob, filename);
+        } else if (typeof File === 'function') {
+          blob = new File([blob], filename, { type });
+        }
+
+        dataArgs.push(blob);
         dataArgs.push(formKey);
       } else {
         dataArgs.push(data);
@@ -64,5 +81,5 @@ export default Mixin.create({
 
       formData.append(...dataArgs);
     }
-  },
+  }
 });
