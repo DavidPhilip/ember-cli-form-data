@@ -56,8 +56,9 @@ export default Mixin.create({
       var sendAsFile = this.get('sendAsFile');
       var data = value === null ? '' : value;
       var dataArgs = [formKey];
+      var isFile = value.constructor === File;
 
-      if (sendAsFile) {
+      if (sendAsFile && !isFile) {
         var type = 'application/vnd.api+json';
         var filename = `${formKey}.json`;
         var blob = new Blob([data], { type });
