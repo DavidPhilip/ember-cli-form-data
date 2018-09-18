@@ -53,34 +53,14 @@ export default Mixin.create({
         this._appendValue(value[key], `${formKey}[${key}]`, formData);
       }, this);
     } else if (typeof value !== 'undefined') {
-      var sendAsFile = this.get('sendAsFile');
-      var data = value === null ? '' : value;
-      var dataArgs = [formKey];
+      value = value || '';
       var isFile = value.constructor === File;
 
-      if (sendAsFile && !isFile) {
-        var type = 'application/vnd.api+json';
-        var filename = `${formKey}.json`;
-        var blob = new Blob([data], { type });
+      var type = isFile ? value.type : 'application/vnd.api+json';
+      var filename = isFile ? value.name : `${formKey}.json`;
+      var blob = new Blob([value], { type });
 
-        if (
-          /Edge/.test(navigator.userAgent) &&
-          typeof window.navigator.msSaveBlob !== 'undefined'
-        ) {
-          // EDGE Bug - Not supporting File
-          // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/9551546/
-          window.navigator.msSaveBlob(blob, filename);
-        } else if (typeof File === 'function') {
-          blob = new File([blob], filename, { type });
-        }
-
-        dataArgs.push(blob);
-        dataArgs.push(formKey);
-      } else {
-        dataArgs.push(data);
-      }
-
-      formData.append(...dataArgs);
+      formData.append(formKey, blob, filename);
     }
   }
 });
