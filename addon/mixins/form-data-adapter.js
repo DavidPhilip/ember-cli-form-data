@@ -51,7 +51,19 @@ export default Mixin.create({
         this._appendValue(value[key], `${formKey}[${key}]`, formData);
       }, this);
     } else if (typeof value !== 'undefined'){
-      formData.append(formKey, value === null ? '' : value);
+      var isFile = value.constructor === File;
+      var data = value || '';
+      var filename = '';
+
+      if (!isFile) {
+        var type = 'application/vnd.api+json';
+        filename = `${formKey}.json`;
+        data = new Blob([data], { type });
+      } else {
+        filename = data.name;
+      }
+
+      formData.append(formKey, data, filename);
     }
   },
 });
